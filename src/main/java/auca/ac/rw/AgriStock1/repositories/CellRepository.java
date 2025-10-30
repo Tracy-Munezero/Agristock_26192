@@ -10,5 +10,4 @@ import java.util.List;
 @Repository
 public interface CellRepository extends JpaRepository<Cell, Long> {
     List<Cell> findBySectorSectorCode(String sectorCode);
-    List<Cell> findBySector(Sector sector);
 }

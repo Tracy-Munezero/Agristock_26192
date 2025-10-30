@@ -1,4 +1,5 @@
 package auca.ac.rw.AgriStock1.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -29,9 +30,10 @@ public class ProductDetails {
     @PastOrPresent(message = "Harvest date cannot be in the future")
     private LocalDate harvestDate;
 
-    // ONE-TO-ONE with Product
+    // ONE-TO-ONE with Product (prevent circular reference)
     @OneToOne
     @JoinColumn(name = "product_id", nullable = false, unique = true)
+    @JsonIgnore
     private Product product;
 
     @PrePersist

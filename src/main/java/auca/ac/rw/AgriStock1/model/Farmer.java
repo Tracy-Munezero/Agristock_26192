@@ -1,5 +1,6 @@
 package auca.ac.rw.AgriStock1.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -42,21 +43,25 @@ public class Farmer {
     @Column(nullable = false)
     private LocalDate registrationDate;
 
-    // ONE-TO-ONE with Account
+    // ONE-TO-ONE with Account (exclude farmer from Account JSON)
     @OneToOne(mappedBy = "farmer", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("farmer")
     private Account account;
 
-    // ONE-TO-MANY with Product
+    // ONE-TO-MANY with Product (exclude farmer from Product JSON)
     @OneToMany(mappedBy = "farmer", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("farmer")
     private List<Product> products;
 
-    // MANY-TO-ONE with Location (Village)
+    // MANY-TO-ONE with Location (exclude unnecessary nested data)
     @ManyToOne
     @JoinColumn(name = "village_id", nullable = false)
+    @JsonIgnoreProperties({"cell.sector.district.province.districts"})
     private Village location;
 
-    // ONE-TO-ONE with Inventory
+    // ONE-TO-ONE with Inventory (exclude farmer from Inventory JSON)
     @OneToOne(mappedBy = "farmer", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("farmer")
     private Inventory inventory;
 
     @PrePersist

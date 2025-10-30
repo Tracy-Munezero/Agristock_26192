@@ -1,4 +1,6 @@
 package auca.ac.rw.AgriStock1.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -34,16 +36,19 @@ public class Product {
     @Min(value = 0, message = "Quantity cannot be negative")
     private Integer quantityInStock;
 
-    // MANY-TO-ONE with Farmer
+    // MANY-TO-ONE with Farmer (prevent circular reference)
     @ManyToOne
     @JoinColumn(name = "farmer_id", nullable = false)
+    @JsonIgnore
     private Farmer farmer;
 
-    // ONE-TO-ONE with ProductDetails
+    // ONE-TO-ONE with ProductDetails (exclude product from details)
     @OneToOne(mappedBy = "product", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("product")
     private ProductDetails productDetails;
 
-    // ONE-TO-MANY with Transaction
+    // ONE-TO-MANY with Transaction (exclude product details)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties({"product", "buyer"})
     private List<Transaction> transactions;
 }

@@ -1,4 +1,5 @@
 package auca.ac.rw.AgriStock1.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,9 +25,10 @@ public class Inventory {
     @Column(nullable = false)
     private LocalDate lastUpdated;
 
-    // ONE-TO-ONE with Farmer
+    // ONE-TO-ONE with Farmer (prevent circular reference)
     @OneToOne
     @JoinColumn(name = "farmer_id", nullable = false, unique = true)
+    @JsonIgnore
     private Farmer farmer;
 
     @PrePersist

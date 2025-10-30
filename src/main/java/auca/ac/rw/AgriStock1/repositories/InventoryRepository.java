@@ -11,5 +11,4 @@ import java.util.Optional;
 @Repository
 public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     Optional<Inventory> findByFarmerFarmerId(Long farmerId);
-    List<Inventory> findByTotalProductsGreaterThan(Integer threshold);
 }

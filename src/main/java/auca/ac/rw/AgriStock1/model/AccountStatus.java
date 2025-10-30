@@ -4,5 +4,4 @@ package auca.ac.rw.AgriStock1.model;
 public enum AccountStatus {
     ACTIVE,
     INACTIVE,
-    SUSPENDED
 }

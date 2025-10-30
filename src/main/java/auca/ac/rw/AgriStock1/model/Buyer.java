@@ -1,4 +1,5 @@
 package auca.ac.rw.AgriStock1.model;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -41,9 +42,9 @@ public class Buyer {
     // MANY-TO-ONE with Location (Village)
     @ManyToOne
     @JoinColumn(name = "village_id", nullable = false)
+    @JsonIgnoreProperties({"cell.sector.district.province.districts"})
     private Village location;
 
-    // MANY-TO-MANY with Product via Transaction
     @OneToMany(mappedBy = "buyer", cascade = CascadeType.ALL)
     private List<Transaction> transactions;
 

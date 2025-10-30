@@ -65,14 +65,6 @@ public class AccountService {
             account.setUsername(accountDetails.getUsername());
         }
 
-        if (accountDetails.getPassword() != null && !accountDetails.getPassword().isEmpty()) {
-            account.setPassword(accountDetails.getPassword());
-        }
-
-        if (accountDetails.getAccountStatus() != null) {
-            account.setAccountStatus(accountDetails.getAccountStatus());
-        }
-
         return accountRepository.save(account);
     }
 

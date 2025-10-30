@@ -34,8 +34,6 @@ public interface FarmerRepository extends JpaRepository<Farmer, Long> {
 
     // Date range queries
     List<Farmer> findByRegistrationDateBetween(LocalDate startDate, LocalDate endDate);
-    List<Farmer> findByRegistrationDateAfter(LocalDate date);
-
     // Search by name
     List<Farmer> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
             String firstName, String lastName

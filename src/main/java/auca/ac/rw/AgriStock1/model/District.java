@@ -1,5 +1,6 @@
 package auca.ac.rw.AgriStock1.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -28,9 +29,9 @@ public class District {
     private String districtName;
 
     @ManyToOne
-    @JoinColumn(name = "province_id", nullable = false)
-    private Province province;
+    private Province province;  // Show province info ONLY
 
-    @OneToMany(mappedBy = "district", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "district")
+    @JsonIgnore  // Don't show sectors list
     private List<Sector> sectors;
 }

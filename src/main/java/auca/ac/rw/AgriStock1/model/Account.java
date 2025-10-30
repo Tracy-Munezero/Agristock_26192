@@ -1,5 +1,6 @@
 package auca.ac.rw.AgriStock1.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -36,9 +37,10 @@ public class Account {
     @Column(nullable = false)
     private LocalDate createdDate;
 
-    // ONE-TO-ONE with Farmer
+    // ONE-TO-ONE with Farmer (prevent circular reference)
     @OneToOne
     @JoinColumn(name = "farmer_id", nullable = false, unique = true)
+    @JsonIgnore
     private Farmer farmer;
 
     @PrePersist

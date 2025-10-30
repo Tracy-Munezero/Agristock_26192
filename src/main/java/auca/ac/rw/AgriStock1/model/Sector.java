@@ -1,5 +1,6 @@
 package auca.ac.rw.AgriStock1.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -32,5 +33,6 @@ public class Sector {
     private District district;
 
     @OneToMany(mappedBy = "sector", cascade = CascadeType.ALL)
+    @JsonIgnore  // Don't show cell list
     private List<Cell> cells;
 }

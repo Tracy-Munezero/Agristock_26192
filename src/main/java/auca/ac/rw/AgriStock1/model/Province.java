@@ -1,5 +1,6 @@
 package auca.ac.rw.AgriStock1.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -28,6 +29,7 @@ public class Province {
     @NotBlank(message = "Province name is required")
     private String provinceName;
 
-    @OneToMany(mappedBy = "province", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "province")
+    @JsonIgnore  // Don't show districts list in province
     private List<District> districts;
 }
