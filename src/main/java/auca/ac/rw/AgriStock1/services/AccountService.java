@@ -19,12 +19,18 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final FarmerRepository farmerRepository;
 
+    //create a function to get account by farmer id
+    public Farmer getFarmerIdForAccount(Long farmerId) {
+        return farmerRepository.findById(farmerId).orElseThrow(
+                () -> new RuntimeException("Farmer not found with id: " + farmerId)
+        );
+    }
     // CREATE
     public Account createAccount(Account account) {
         if (accountRepository.existsByUsername(account.getUsername())) {
             throw new RuntimeException("Username already exists");
         }
-
+        System.out.println("Hello from Spring Boot " + account);
         if (account.getFarmer() != null && account.getFarmer().getFarmerId() != null) {
             Farmer farmer = farmerRepository.findById(account.getFarmer().getFarmerId())
                     .orElseThrow(() -> new RuntimeException("Farmer not found"));

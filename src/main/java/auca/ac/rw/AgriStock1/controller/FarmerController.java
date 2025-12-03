@@ -82,44 +82,6 @@ public class FarmerController {
         return ResponseEntity.noContent().build();
     }
 
-    // ==================== LOCATION-BASED QUERIES ====================
-
-    // Get farmers by province code (REQUIRED ENDPOINT)
-    @GetMapping("/by-province-code/{code}")
-    public ResponseEntity<List<Farmer>> getFarmersByProvinceCode(@PathVariable String code) {
-        List<Farmer> farmers = farmerService.getFarmersByProvinceCode(code);
-        return ResponseEntity.ok(farmers);
-    }
-
-    // Get farmers by province name (REQUIRED ENDPOINT)
-    @GetMapping("/by-province-name/{name}")
-    public ResponseEntity<List<Farmer>> getFarmersByProvinceName(@PathVariable String name) {
-        List<Farmer> farmers = farmerService.getFarmersByProvinceName(name);
-        return ResponseEntity.ok(farmers);
-    }
-
-    // Get farmers by district
-    @GetMapping("/by-district/{districtCode}")
-    public ResponseEntity<List<Farmer>> getFarmersByDistrict(@PathVariable String districtCode) {
-        List<Farmer> farmers = farmerService.getFarmersByDistrictCode(districtCode);
-        return ResponseEntity.ok(farmers);
-    }
-
-    // Get farmers by village
-    @GetMapping("/by-village/{villageId}")
-    public ResponseEntity<List<Farmer>> getFarmersByVillage(@PathVariable Long villageId) {
-        List<Farmer> farmers = farmerService.getFarmersByVillageId(villageId);
-        return ResponseEntity.ok(farmers);
-    }
-
-    // Get farmer's location hierarchy
-    @GetMapping("/{farmerId}/location")
-    public ResponseEntity<LocationHierarchyDTO> getFarmerLocation(@PathVariable Long farmerId) {
-        Farmer farmer = farmerService.getFarmerById(farmerId);
-        LocationHierarchyDTO location = buildLocationHierarchy(farmer);
-        return ResponseEntity.ok(location);
-    }
-
     // ==================== SEARCH & FILTER ====================
 
     // Search farmers by name
@@ -146,34 +108,5 @@ public class FarmerController {
         return ResponseEntity.ok(exists);
     }
 
-    // ==================== HELPER METHODS ====================
-    private LocationHierarchyDTO buildLocationHierarchy(Farmer farmer) {
-        LocationHierarchyDTO dto = new LocationHierarchyDTO();
-        if (farmer.getLocation() != null) {
-            dto.setVillage(farmer.getLocation().getVillageName());
-            dto.setVillageCode(farmer.getLocation().getVillageCode());
-
-            if (farmer.getLocation().getCell() != null) {
-                dto.setCell(farmer.getLocation().getCell().getCellName());
-                dto.setCellCode(farmer.getLocation().getCell().getCellCode());
-
-                if (farmer.getLocation().getCell().getSector() != null) {
-                    dto.setSector(farmer.getLocation().getCell().getSector().getSectorName());
-                    dto.setSectorCode(farmer.getLocation().getCell().getSector().getSectorCode());
-
-                    if (farmer.getLocation().getCell().getSector().getDistrict() != null) {
-                        dto.setDistrict(farmer.getLocation().getCell().getSector().getDistrict().getDistrictName());
-                        dto.setDistrictCode(farmer.getLocation().getCell().getSector().getDistrict().getDistrictCode());
-
-                        if (farmer.getLocation().getCell().getSector().getDistrict().getProvince() != null) {
-                            dto.setProvince(farmer.getLocation().getCell().getSector().getDistrict().getProvince().getProvinceName());
-                            dto.setProvinceCode(farmer.getLocation().getCell().getSector().getDistrict().getProvince().getProvinceCode());
-                        }
-                    }
-                }
-            }
-        }
-        return dto;
-    }
 }
 

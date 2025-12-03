@@ -2,7 +2,10 @@ package auca.ac.rw.AgriStock1.controller;
 
 import auca.ac.rw.AgriStock1.model.Account;
 import auca.ac.rw.AgriStock1.model.AccountStatus;
+import auca.ac.rw.AgriStock1.model.DTO.AccountRequest;
+import auca.ac.rw.AgriStock1.model.Farmer;
 import auca.ac.rw.AgriStock1.services.AccountService;
+import auca.ac.rw.AgriStock1.services.FarmerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,7 +24,13 @@ public class AccountController {
 
     // CREATE
     @PostMapping
-    public ResponseEntity<Account> createAccount(@Valid @RequestBody Account account) {
+    public ResponseEntity<Account> createAccount(@Valid @RequestBody AccountRequest req) {
+        Farmer farmer = accountService.getFarmerIdForAccount(req.getFarmerId());
+        Account account = new Account();
+        account.setUsername(req.getUsername());
+        account.setPassword(req.getPassword());
+        account.setAccountStatus(req.getAccountStatus());
+        account.setFarmer(farmer);
         Account createdAccount = accountService.createAccount(account);
         return new ResponseEntity<>(createdAccount, HttpStatus.CREATED);
     }

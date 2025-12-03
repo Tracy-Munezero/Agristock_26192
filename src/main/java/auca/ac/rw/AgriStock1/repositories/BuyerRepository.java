@@ -11,16 +11,6 @@ import java.util.Optional;
 
 @Repository
 public interface BuyerRepository extends JpaRepository<Buyer, Long> {
-
-    // Find buyers by province code
-    List<Buyer> findByLocationCellSectorDistrictProvinceProvinceCode(String provinceCode);
-
-    // Find buyers by province name
-    List<Buyer> findByLocationCellSectorDistrictProvinceProvinceName(String provinceName);
-
-    // Find by location
-    List<Buyer> findByLocationVillageId(Long villageId);
-
     // Email validation
     boolean existsByEmail(String email);
     Optional<Buyer> findByEmail(String email);

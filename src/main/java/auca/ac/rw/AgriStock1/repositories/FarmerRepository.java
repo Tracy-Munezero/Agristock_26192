@@ -12,19 +12,6 @@ import java.util.Optional;
 
 @Repository
 public interface FarmerRepository extends JpaRepository<Farmer, Long> {
-
-    // Find farmers by province code (complex nested query)
-    List<Farmer> findByLocationCellSectorDistrictProvinceProvinceCode(String provinceCode);
-
-    // Find farmers by province name
-    List<Farmer> findByLocationCellSectorDistrictProvinceProvinceName(String provinceName);
-
-    // Find farmers by district
-    List<Farmer> findByLocationCellSectorDistrictDistrictCode(String districtCode);
-
-    // Find farmers by village
-    List<Farmer> findByLocationVillageId(Long villageId);
-
     // Email validation
     boolean existsByEmail(String email);
     Optional<Farmer> findByEmail(String email);

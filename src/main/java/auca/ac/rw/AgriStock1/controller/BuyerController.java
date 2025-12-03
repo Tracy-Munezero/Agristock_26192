@@ -79,26 +79,6 @@ public class BuyerController {
         return ResponseEntity.noContent().build();
     }
 
-    // ==================== LOCATION-BASED QUERIES ====================
-
-    @GetMapping("/by-province-code/{code}")
-    public ResponseEntity<List<Buyer>> getBuyersByProvinceCode(@PathVariable String code) {
-        List<Buyer> buyers = buyerService.getBuyersByProvinceCode(code);
-        return ResponseEntity.ok(buyers);
-    }
-
-    @GetMapping("/by-province-name/{name}")
-    public ResponseEntity<List<Buyer>> getBuyersByProvinceName(@PathVariable String name) {
-        List<Buyer> buyers = buyerService.getBuyersByProvinceName(name);
-        return ResponseEntity.ok(buyers);
-    }
-
-    @GetMapping("/by-village/{villageId}")
-    public ResponseEntity<List<Buyer>> getBuyersByVillage(@PathVariable Long villageId) {
-        List<Buyer> buyers = buyerService.getBuyersByVillageId(villageId);
-        return ResponseEntity.ok(buyers);
-    }
-
     // ==================== SEARCH ====================
 
     @GetMapping("/search")

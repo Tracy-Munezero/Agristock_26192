@@ -3,17 +3,18 @@ package auca.ac.rw.AgriStock1.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "accounts")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = "farmer")
+@EqualsAndHashCode(exclude = "farmer")
+@Entity
+@Table(name = "accounts")
 public class Account {
 
     @Id

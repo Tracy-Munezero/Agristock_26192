@@ -18,7 +18,6 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Only initialize if database is empty
         if (provinceRepository.count() == 0) {
             initializeRwandaLocations();
         }

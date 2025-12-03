@@ -39,7 +39,7 @@ public class Product {
     // MANY-TO-ONE with Farmer (prevent circular reference)
     @ManyToOne
     @JoinColumn(name = "farmer_id", nullable = false)
-    @JsonIgnore
+//    @JsonIgnoreProperties
     private Farmer farmer;
 
     // ONE-TO-ONE with ProductDetails (exclude product from details)

@@ -28,13 +28,6 @@ public class BuyerService {
             throw new RuntimeException("Email already exists");
         }
 
-        // Validate location exists
-        if (buyer.getLocation() != null && buyer.getLocation().getVillageId() != null) {
-            Village village = villageRepository.findById(buyer.getLocation().getVillageId())
-                    .orElseThrow(() -> new RuntimeException("Village not found"));
-            buyer.setLocation(village);
-        }
-
         return buyerRepository.save(buyer);
     }
 
@@ -73,14 +66,6 @@ public class BuyerService {
             }
             buyer.setEmail(buyerDetails.getEmail());
         }
-
-        // Update location if provided
-        if (buyerDetails.getLocation() != null) {
-            Village village = villageRepository.findById(buyerDetails.getLocation().getVillageId())
-                    .orElseThrow(() -> new RuntimeException("Village not found"));
-            buyer.setLocation(village);
-        }
-
         return buyerRepository.save(buyer);
     }
 
@@ -90,23 +75,6 @@ public class BuyerService {
             throw new RuntimeException("Buyer not found with id: " + id);
         }
         buyerRepository.deleteById(id);
-    }
-
-    // ==================== CUSTOM QUERIES ====================
-
-    // Find buyers by province code
-    public List<Buyer> getBuyersByProvinceCode(String provinceCode) {
-        return buyerRepository.findByLocationCellSectorDistrictProvinceProvinceCode(provinceCode);
-    }
-
-    // Find buyers by province name
-    public List<Buyer> getBuyersByProvinceName(String provinceName) {
-        return buyerRepository.findByLocationCellSectorDistrictProvinceProvinceName(provinceName);
-    }
-
-    // Find buyers by village
-    public List<Buyer> getBuyersByVillageId(Long villageId) {
-        return buyerRepository.findByLocationVillageId(villageId);
     }
 
     // Search buyers by name

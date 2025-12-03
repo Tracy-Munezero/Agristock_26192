@@ -39,11 +39,6 @@ public class Buyer {
     @Column(nullable = false)
     private LocalDateTime registrationDate;
 
-    // MANY-TO-ONE with Location (Village)
-    @ManyToOne
-    @JoinColumn(name = "village_id", nullable = false)
-    @JsonIgnoreProperties({"cell.sector.district.province.districts"})
-    private Village location;
 
     @OneToMany(mappedBy = "buyer", cascade = CascadeType.ALL)
     private List<Transaction> transactions;

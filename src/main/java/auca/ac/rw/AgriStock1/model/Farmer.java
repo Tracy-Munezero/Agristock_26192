@@ -53,11 +53,6 @@ public class Farmer {
     @JsonIgnoreProperties("farmer")
     private List<Product> products;
 
-    // MANY-TO-ONE with Location (exclude unnecessary nested data)
-    @ManyToOne
-    @JoinColumn(name = "village_id", nullable = false)
-    @JsonIgnoreProperties({"cell.sector.district.province.districts"})
-    private Village location;
 
     // ONE-TO-ONE with Inventory (exclude farmer from Inventory JSON)
     @OneToOne(mappedBy = "farmer", cascade = CascadeType.ALL)

@@ -27,14 +27,6 @@ public class FarmerService {
         if (farmerRepository.existsByEmail(farmer.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
-
-        // Validate location exists
-        if (farmer.getLocation() != null && farmer.getLocation().getVillageId() != null) {
-            Village village = villageRepository.findById(farmer.getLocation().getVillageId())
-                    .orElseThrow(() -> new RuntimeException("Village not found"));
-            farmer.setLocation(village);
-        }
-
         return farmerRepository.save(farmer);
     }
 
@@ -73,14 +65,6 @@ public class FarmerService {
             }
             farmer.setEmail(farmerDetails.getEmail());
         }
-
-        // Update location if provided
-        if (farmerDetails.getLocation() != null) {
-            Village village = villageRepository.findById(farmerDetails.getLocation().getVillageId())
-                    .orElseThrow(() -> new RuntimeException("Village not found"));
-            farmer.setLocation(village);
-        }
-
         return farmerRepository.save(farmer);
     }
 
@@ -90,28 +74,6 @@ public class FarmerService {
             throw new RuntimeException("Farmer not found with id: " + id);
         }
         farmerRepository.deleteById(id);
-    }
-
-    // ==================== CUSTOM QUERIES ====================
-
-    // Find farmers by province code
-    public List<Farmer> getFarmersByProvinceCode(String provinceCode) {
-        return farmerRepository.findByLocationCellSectorDistrictProvinceProvinceCode(provinceCode);
-    }
-
-    // Find farmers by province name
-    public List<Farmer> getFarmersByProvinceName(String provinceName) {
-        return farmerRepository.findByLocationCellSectorDistrictProvinceProvinceName(provinceName);
-    }
-
-    // Find farmers by district
-    public List<Farmer> getFarmersByDistrictCode(String districtCode) {
-        return farmerRepository.findByLocationCellSectorDistrictDistrictCode(districtCode);
-    }
-
-    // Find farmers by village
-    public List<Farmer> getFarmersByVillageId(Long villageId) {
-        return farmerRepository.findByLocationVillageId(villageId);
     }
 
     // Find farmers registered within date range
