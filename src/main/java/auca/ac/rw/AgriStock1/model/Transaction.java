@@ -1,4 +1,5 @@
 package auca.ac.rw.AgriStock1.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -36,11 +37,13 @@ public class Transaction {
     // MANY-TO-ONE with Product
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
+//    @JsonIgnore
     private Product product;
 
     // MANY-TO-ONE with Buyer
     @ManyToOne
     @JoinColumn(name = "buyer_id", nullable = false)
+    @JsonIgnore
     private Buyer buyer;
 
     @PrePersist

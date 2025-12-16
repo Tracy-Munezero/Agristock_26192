@@ -47,12 +47,13 @@ public class BuyerController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "buyerId") String sortBy,
-            @RequestParam(defaultValue = "ASC") String sortDirection
+            @RequestParam(defaultValue = "ASC") String sortDirection,
+            @RequestParam(defaultValue = "") String search
     ) {
         Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC")
                 ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        Page<Buyer> buyers = buyerService.getAllBuyersPaginated(pageable);
+        Page<Buyer> buyers = buyerService.getAllBuyersPaginated(pageable, search);
         return ResponseEntity.ok(buyers);
     }
 

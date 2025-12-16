@@ -51,12 +51,13 @@ public class TransactionController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "transactionDate") String sortBy,
-            @RequestParam(defaultValue = "DESC") String sortDirection
+            @RequestParam(defaultValue = "DESC") String sortDirection,
+            @RequestParam(defaultValue = "") String search
     ) {
         Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC")
                 ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        Page<Transaction> transactions = transactionService.getAllTransactionsPaginated(pageable);
+        Page<Transaction> transactions = transactionService.getAllTransactionsPaginated(pageable, search);
         return ResponseEntity.ok(transactions);
     }
 

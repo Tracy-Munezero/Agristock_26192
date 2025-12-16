@@ -68,8 +68,8 @@ public class ProductService {
         return productRepository.findAll();
     }
 
-    public Page<Product> getAllProductsPaginated(Pageable pageable) {
-        return productRepository.findAll(pageable);
+    public Page<Product> getAllProductsPaginated(Pageable pageable, String search) {
+        return productRepository.findAll(pageable, search);
     }
 
     // ==================== UPDATE ====================
@@ -159,10 +159,10 @@ public class ProductService {
         return productRepository.findByFarmerFarmerId(farmerId);
     }
 
-    public Page<Product> getProductsByFarmerPaginated(Long farmerId, Pageable pageable) {
+    public Page<Product> getProductsByFarmerPaginated(Long farmerId, Pageable pageable, String search) {
         Farmer farmer = farmerRepository.findById(farmerId)
                 .orElseThrow(() -> new RuntimeException("Farmer not found"));
-        return productRepository.findByFarmer(farmer, pageable);
+        return productRepository.findByFarmer(farmer, pageable, search);
     }
 
     // Get products by category

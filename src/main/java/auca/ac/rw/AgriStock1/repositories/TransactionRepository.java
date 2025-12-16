@@ -40,6 +40,10 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     // Status queries
     List<Transaction> findByStatus(TransactionStatus status);
 
+    @Query("SELECT t FROM Transaction t " +
+            "WHERE CAST(t.transactionId AS string) LIKE %:keyword% ")
+    Page<Transaction> findAll(@Param("keyword") String keyword, Pageable pageable);
+
     // Sales reports
     @Query("SELECT t FROM Transaction t WHERE t.transactionDate >= :startDate " +
             "AND t.transactionDate <= :endDate AND t.status = 'COMPLETED'")

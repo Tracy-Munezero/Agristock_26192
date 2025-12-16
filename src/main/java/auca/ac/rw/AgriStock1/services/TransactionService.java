@@ -17,6 +17,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static java.sql.DriverManager.println;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -70,8 +72,8 @@ public class TransactionService {
         return transactionRepository.findAll();
     }
 
-    public Page<Transaction> getAllTransactionsPaginated(Pageable pageable) {
-        return transactionRepository.findAll(pageable);
+    public Page<Transaction> getAllTransactionsPaginated(Pageable pageable, String search) {
+        return transactionRepository.findAll(search ,pageable);
     }
 
     // ==================== UPDATE ====================
@@ -127,6 +129,8 @@ public class TransactionService {
     public Page<Transaction> getTransactionsByBuyerPaginated(Long buyerId, Pageable pageable) {
         Buyer buyer = buyerRepository.findById(buyerId)
                 .orElseThrow(() -> new RuntimeException("Buyer not found"));
+        println("Buyer found: " + buyer.getBuyerName());
+
         return transactionRepository.findByBuyer(buyer, pageable);
     }
 

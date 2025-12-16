@@ -41,8 +41,8 @@ public class BuyerService {
         return buyerRepository.findAll();
     }
 
-    public Page<Buyer> getAllBuyersPaginated(Pageable pageable) {
-        return buyerRepository.findAll(pageable);
+    public Page<Buyer> getAllBuyersPaginated(Pageable pageable, String search) {
+        return buyerRepository.findAll(search, pageable);
     }
 
     public Buyer getBuyerByEmail(String email) {

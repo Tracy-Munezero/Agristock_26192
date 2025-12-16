@@ -60,12 +60,13 @@ public class ProductController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "productName") String sortBy,
-            @RequestParam(defaultValue = "ASC") String sortDirection
+            @RequestParam(defaultValue = "ASC") String sortDirection,
+            @RequestParam(defaultValue = "") String search
     ) {
         Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC")
                 ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        Page<Product> products = productService.getAllProductsPaginated(pageable);
+        Page<Product> products = productService.getAllProductsPaginated(pageable, search);
         return ResponseEntity.ok(products);
     }
 
@@ -129,10 +130,11 @@ public class ProductController {
             @PathVariable Long farmerId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "productName") String sortBy
+            @RequestParam(defaultValue = "productName") String sortBy,
+            @RequestParam(required = false) String search
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        Page<Product> products = productService.getProductsByFarmerPaginated(farmerId, pageable);
+        Page<Product> products = productService.getProductsByFarmerPaginated(farmerId, pageable, search);
         return ResponseEntity.ok(products);
     }
 

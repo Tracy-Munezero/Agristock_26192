@@ -47,6 +47,9 @@ public class User {
     private Boolean isActive = true;
 
     @Column(nullable = false)
+    private Boolean twoFactorEnabled = true; // Enable 2FA by default
+
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @Column
@@ -62,6 +65,9 @@ public class User {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        if (twoFactorEnabled == null) {
+            twoFactorEnabled = true;
+        }
     }
 }
 

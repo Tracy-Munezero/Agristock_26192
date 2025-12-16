@@ -38,7 +38,6 @@ public class WebSecurityConfig {
 
                         // Farmer-only endpoints
                         .requestMatchers(
-                                "/api/products/**",
                                 "/api/inventory/**"
                         ).hasAnyRole("FARMER", "ADMIN")
 
@@ -49,6 +48,7 @@ public class WebSecurityConfig {
 
                         // Shared endpoints (Farmer and Buyer can access)
                         .requestMatchers(
+                                "/api/products/**",
                                 "/api/transactions/**"
                         ).hasAnyRole("FARMER", "BUYER", "ADMIN")
 

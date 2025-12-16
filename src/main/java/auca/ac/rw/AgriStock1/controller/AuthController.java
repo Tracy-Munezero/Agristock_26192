@@ -1,12 +1,20 @@
 package auca.ac.rw.AgriStock1.controller;
 
+import auca.ac.rw.AgriStock1.model.Buyer;
 import auca.ac.rw.AgriStock1.model.DTO.*;
+import auca.ac.rw.AgriStock1.model.Farmer;
+import auca.ac.rw.AgriStock1.model.User;
 import auca.ac.rw.AgriStock1.services.AuthService;
 import auca.ac.rw.AgriStock1.services.EmailService;
+import auca.ac.rw.AgriStock1.services.FarmerService;
 import auca.ac.rw.AgriStock1.services.SendEmailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,32 +27,26 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private SendEmailService sendEmailService;
-    // ==================== REGISTRATION ====================
+    // ==================== REGISTRATION WITH AUTO-LOGIN ====================
 
     /**
      * Register a new user (Farmer or Buyer)
      * POST /api/auth/register
      */
-    @GetMapping("/register")
-    public String register() {
-//        RegisterResponse response = authService.register(request);
-//        emailService.sendWelcomeEmail("ygahamanyi26@gmail.com", "Yvette");
-        sendEmailService.sendEmail("ygahamanyi26@gmail.com", "body", "sbj");
-        return "Success";
+    @PostMapping("/register")
+    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
+        RegisterResponse response = authService.register(request);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     /**
-     * Verify registration OTP
+     * Verify registration OTP and auto-login
      * POST /api/auth/verify-otp
+     * Returns: Login tokens immediately after verification
      */
     @PostMapping("/verify-otp")
-    public ResponseEntity<VerifyOTPResponse> verifyOTP(@Valid @RequestBody VerifyOTPRequest request) {
-        VerifyOTPResponse response = authService.verifyOTP(request);
+    public ResponseEntity<LoginResponse> verifyOTP(@Valid @RequestBody VerifyOTPRequest request) {
+        LoginResponse response = authService.verifyOTP(request);
         return ResponseEntity.ok(response);
     }
 
@@ -55,7 +57,7 @@ public class AuthController {
     @PostMapping("/resend-otp")
     public ResponseEntity<String> resendOTP(@RequestParam String email, @RequestParam String purpose) {
         if (purpose.equalsIgnoreCase("LOGIN")) {
-            authService.requestLoginOTP(email);
+            authService.requestLoginWith2FA(email);
         } else if (purpose.equalsIgnoreCase("PASSWORD_RESET")) {
             authService.requestPasswordReset(email);
         } else {
@@ -64,35 +66,37 @@ public class AuthController {
         return ResponseEntity.ok("OTP resent successfully");
     }
 
-    // ==================== LOGIN ====================
+    // ==================== TWO-FACTOR AUTHENTICATION LOGIN ====================
 
     /**
-     * Traditional login with email and password
+     * Step 1: Request 2FA OTP for login
+     * POST /api/auth/login/request-2fa
+     */
+    @PostMapping("/login/request-2fa")
+    public ResponseEntity<LoginOTPResponse> request2FA(@RequestParam String email) {
+        LoginOTPResponse response = authService.requestLoginWith2FA(email);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Step 2: Login with email, password, and OTP (2FA)
+     * POST /api/auth/login/2fa
+     */
+    @PostMapping("/login/2fa")
+    public ResponseEntity<LoginResponse> loginWith2FA(@Valid @RequestBody LoginWith2FARequest request) {
+        LoginResponse response = authService.verifyLoginWith2FA(request);
+        return ResponseEntity.ok(response);
+    }
+
+    // ==================== TRADITIONAL LOGIN (Backward Compatibility) ====================
+
+    /**
+     * Traditional login with email and password (only if 2FA is disabled)
      * POST /api/auth/login
      */
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = authService.login(request);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * Request login OTP (passwordless login)
-     * POST /api/auth/login/request-otp
-     */
-    @PostMapping("/login/request-otp")
-    public ResponseEntity<LoginOTPResponse> requestLoginOTP(@RequestParam String email) {
-        LoginOTPResponse response = authService.requestLoginOTP(email);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * Verify login OTP and get access token
-     * POST /api/auth/login/verify-otp
-     */
-    @PostMapping("/login/verify-otp")
-    public ResponseEntity<LoginResponse> verifyLoginOTP(@Valid @RequestBody LoginOTPVerifyRequest request) {
-        LoginResponse response = authService.verifyLoginOTP(request);
         return ResponseEntity.ok(response);
     }
 
@@ -138,6 +142,36 @@ public class AuthController {
     public ResponseEntity<String> logout(@RequestParam String refreshToken) {
         authService.logout(refreshToken);
         return ResponseEntity.ok("Logged out successfully");
+    }
+
+    // ==================== 2FA MANAGEMENT ====================
+
+    /**
+     * Enable/Disable two-factor authentication
+     * POST /api/auth/toggle-2fa
+     */
+    @PostMapping("/toggle-2fa")
+    public ResponseEntity<String> toggle2FA(
+            @RequestParam Long userId,
+            @RequestParam boolean enable
+    ) {
+        String response = authService.toggle2FA(userId, enable);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/paginated/users")
+    public ResponseEntity<Page<User>> getAllUsersPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "userId") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDirection,
+            @RequestParam(defaultValue = "") String search
+    ) {
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC")
+                ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Page<User> users = authService.getAllUsersPaginated(pageable, search);
+        return ResponseEntity.ok(users);
     }
 
 }

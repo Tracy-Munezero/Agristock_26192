@@ -6,6 +6,9 @@ import auca.ac.rw.AgriStock1.repositories.*;
 import auca.ac.rw.AgriStock1.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,8 +29,6 @@ public class AuthService {
     private final BuyerRepository buyerRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-
-    @Autowired
     private final EmailService emailService;
 
     // ==================== REGISTRATION ====================
@@ -61,6 +62,7 @@ public class AuthService {
         user.setRole(role);
         user.setIsVerified(false);
         user.setIsActive(true);
+        user.setTwoFactorEnabled(true); // Enable 2FA by default
 
         User savedUser = userRepository.save(user);
 
@@ -73,6 +75,10 @@ public class AuthService {
             farmer.setPhone(request.getPhone());
             farmer.setRegistrationDate(java.time.LocalDate.now());
 
+            if (request.getVillageId() != null) {
+                Village village = new Village();
+                village.setVillageId(request.getVillageId());
+            }
 
             Farmer savedFarmer = farmerRepository.save(farmer);
             savedUser.setFarmerId(savedFarmer.getFarmerId());
@@ -84,6 +90,10 @@ public class AuthService {
             buyer.setBusinessName(request.getBusinessName());
             buyer.setRegistrationDate(LocalDateTime.now());
 
+            if (request.getVillageId() != null) {
+                Village village = new Village();
+                village.setVillageId(request.getVillageId());
+            }
 
             Buyer savedBuyer = buyerRepository.save(buyer);
             savedUser.setBuyerId(savedBuyer.getBuyerId());
@@ -104,9 +114,9 @@ public class AuthService {
         );
     }
 
-    // ==================== VERIFY OTP ====================
+    // ==================== VERIFY OTP WITH AUTO-LOGIN ====================
 
-    public VerifyOTPResponse verifyOTP(VerifyOTPRequest request) {
+    public LoginResponse verifyOTP(VerifyOTPRequest request) {
         // Find OTP
         OTP otp = otpRepository.findByEmailAndOtpCodeAndPurpose(
                 request.getEmail(),
@@ -124,22 +134,32 @@ public class AuthService {
         otp.setUsedAt(LocalDateTime.now());
         otpRepository.save(otp);
 
-        // If registration OTP, verify user
+        // Get user
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // If registration OTP, verify user and auto-login
         if (otp.getPurpose() == OTPPurpose.REGISTRATION) {
-            User user = userRepository.findByEmail(request.getEmail())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
             user.setIsVerified(true);
+            user.setLastLogin(LocalDateTime.now());
             userRepository.save(user);
 
             emailService.sendWelcomeEmail(user.getEmail(), user.getUsername());
+
+            // Auto-generate tokens and return login response
+            return generateLoginResponse(user);
         }
 
-        return new VerifyOTPResponse("OTP verified successfully", true);
+        // For other OTP purposes, just return success message
+        return new LoginResponse(
+                "OTP verified successfully",
+                null, null, null, null, null, null, null, null
+        );
     }
 
-    // ==================== LOGIN WITH OTP ====================
+    // ==================== TWO-FACTOR LOGIN ====================
 
-    public LoginOTPResponse requestLoginOTP(String email) {
+    public LoginOTPResponse requestLoginWith2FA(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -154,18 +174,34 @@ public class AuthService {
         // Generate and send OTP
         String otpCode = generateOTP();
         saveOTP(email, otpCode, OTPPurpose.LOGIN);
-        emailService.sendOTP(email, otpCode, "LOGIN");
+        emailService.sendOTP(email, otpCode, "LOGIN - Two Factor Authentication");
 
-        return new LoginOTPResponse("OTP sent to " + email);
+        return new LoginOTPResponse("Two-factor authentication code sent to " + email);
     }
 
-    public LoginResponse verifyLoginOTP(LoginOTPVerifyRequest request) {
+    public LoginResponse verifyLoginWith2FA(LoginWith2FARequest request) {
+        // Verify credentials first
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        if (!user.getIsActive()) {
+            throw new RuntimeException("Account is deactivated");
+        }
+
+        if (!user.getIsVerified()) {
+            throw new RuntimeException("Please verify your email first");
+        }
+
         // Verify OTP
         OTP otp = otpRepository.findByEmailAndOtpCodeAndPurpose(
                 request.getEmail(),
                 request.getOtpCode(),
                 OTPPurpose.LOGIN
-        ).orElseThrow(() -> new RuntimeException("Invalid OTP"));
+        ).orElseThrow(() -> new RuntimeException("Invalid OTP code"));
 
         if (!otp.isValid()) {
             throw new RuntimeException("OTP has expired or already been used");
@@ -176,17 +212,14 @@ public class AuthService {
         otp.setUsedAt(LocalDateTime.now());
         otpRepository.save(otp);
 
-        // Get user and generate tokens
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
+        // Update last login
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
 
         return generateLoginResponse(user);
     }
 
-    // ==================== TRADITIONAL LOGIN ====================
+    // ==================== TRADITIONAL LOGIN (kept for backward compatibility) ====================
 
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
@@ -204,6 +237,11 @@ public class AuthService {
             throw new RuntimeException("Please verify your email first");
         }
 
+        // Check if 2FA is enabled
+        if (user.getTwoFactorEnabled()) {
+            throw new RuntimeException("Two-factor authentication is enabled. Please use the 2FA login endpoint");
+        }
+
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
 
@@ -216,7 +254,6 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Generate and send OTP
         String otpCode = generateOTP();
         saveOTP(email, otpCode, OTPPurpose.PASSWORD_RESET);
         emailService.sendPasswordResetEmail(email, otpCode);
@@ -275,6 +312,18 @@ public class AuthService {
         return new RefreshTokenResponse(newAccessToken, refreshToken);
     }
 
+    // ==================== TOGGLE 2FA ====================
+
+    public String toggle2FA(Long userId, boolean enable) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setTwoFactorEnabled(enable);
+        userRepository.save(user);
+
+        return enable ? "Two-factor authentication enabled" : "Two-factor authentication disabled";
+    }
+
     // ==================== HELPER METHODS ====================
 
     private String generateOTP() {
@@ -316,10 +365,14 @@ public class AuthService {
         );
     }
 
-    // ==================== LOGOUT ====================
-
     public void logout(String refreshToken) {
         refreshTokenRepository.findByToken(refreshToken)
                 .ifPresent(refreshTokenRepository::delete);
+    }
+
+    // ==================== PAGINATED USERS ====================
+
+    public Page<User> getAllUsersPaginated(Pageable pageable, String search) {
+        return userRepository.findAll(search ,pageable);
     }
 }

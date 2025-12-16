@@ -11,61 +11,107 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EmailService {
 
-    // For production, integrate with SendGrid, AWS SES, or similar
-    // For now, we'll log the OTP (in production, actually send email)
     @Autowired
     private JavaMailSender mailSender;
 
-    @Value("$spring.mail.username")
+    @Value("${spring.mail.username}")
     private String fromEmailId;
 
-    public EmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-
-    }
-
-
     public void sendOTP(String email, String otpCode, String purpose) {
-        log.info("====================================");
-        log.info("Sending OTP to: {}", email);
-        log.info("Purpose: {}", purpose);
-        log.info("OTP Code: {}", otpCode);
-        log.info("OTP expires in 10 minutes");
-        log.info("====================================");
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmailId);
+            message.setTo(email);
+            message.setSubject("Your OTP Code - " + purpose);
+            message.setText(buildOTPEmailBody(otpCode, purpose));
 
-
-
-        // TODO: In production, integrate with email service:
-
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(fromEmailId);
-        message.setTo(email);
-        message.setSubject("Your OTP Code - " + purpose);
-        message.setText("Your OTP code is: " + otpCode + "\n\nThis code will expire in 10 minutes.");
-        mailSender.send(message);
-
+            mailSender.send(message);
+            log.info("✅ OTP sent successfully to: {}", email);
+        } catch (Exception e) {
+            log.error("❌ Failed to send OTP email to: {}. Error: {}", email, e.getMessage());
+            // For development: log the OTP
+            log.info("====================================");
+            log.info("OTP for {}: {}", email, otpCode);
+            log.info("Purpose: {}", purpose);
+            log.info("====================================");
+        }
     }
 
     public void sendPasswordResetEmail(String email, String otpCode) {
-        log.info("====================================");
-        log.info("Password Reset OTP sent to: {}", email);
-        log.info("OTP Code: {}", otpCode);
-        log.info("Use this code to reset your password");
-        log.info("====================================");
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmailId);
+            message.setTo(email);
+            message.setSubject("Password Reset Request");
+            message.setText(buildPasswordResetEmailBody(otpCode));
+
+            mailSender.send(message);
+            log.info("✅ Password reset email sent to: {}", email);
+        } catch (Exception e) {
+            log.error("❌ Failed to send password reset email: {}", e.getMessage());
+            log.info("Password reset OTP for {}: {}", email, otpCode);
+        }
     }
 
     public void sendWelcomeEmail(String email, String username) {
-        log.info("====================================");
-        log.info("Welcome email sent to: {}", email);
-        log.info("Username: {}", username);
-        log.info("====================================");
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmailId);
+            message.setTo(email);
+            message.setSubject("Welcome to Farm Inventory Management System");
+            message.setText(buildWelcomeEmailBody(username));
 
-        SimpleMailMessage message = new SimpleMailMessage();
+            mailSender.send(message);
+            log.info("✅ Welcome email sent to: {}", email);
+        } catch (Exception e) {
+            log.error("❌ Failed to send welcome email: {}", e.getMessage());
+        }
+    }
 
-        message.setFrom(fromEmailId);
-        message.setTo(email);
-        message.setSubject("Your OTP Code - ");
-        message.setText("Your OTP code is: " + "\n\nThis code will expire in 10 minutes.");
-        mailSender.send(message);
+    private String buildOTPEmailBody(String otpCode, String purpose) {
+        return String.format("""
+            Hello,
+            
+            Your OTP code for %s is: %s
+            
+            This code will expire in 10 minutes.
+            
+            If you didn't request this code, please ignore this email.
+            
+            Best regards,
+            Farm Inventory Management Team
+            """, purpose, otpCode);
+    }
+
+    private String buildPasswordResetEmailBody(String otpCode) {
+        return String.format("""
+            Hello,
+            
+            We received a request to reset your password.
+            
+            Your password reset code is: %s
+            
+            This code will expire in 10 minutes.
+            
+            If you didn't request a password reset, please ignore this email and your password will remain unchanged.
+            
+            Best regards,
+            Farm Inventory Management Team
+            """, otpCode);
+    }
+
+    private String buildWelcomeEmailBody(String username) {
+        return String.format("""
+            Hello %s,
+            
+            Welcome to Farm Inventory Management System!
+            
+            Your account has been successfully verified and is now active.
+            
+            You can now login and start managing your farm inventory.
+            
+            Best regards,
+            Farm Inventory Management Team
+            """, username);
     }
 }

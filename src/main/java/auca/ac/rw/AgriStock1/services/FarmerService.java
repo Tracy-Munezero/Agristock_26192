@@ -44,6 +44,16 @@ public class FarmerService {
         return farmerRepository.findAll(pageable);
     }
 
+    public Page<Farmer> getAllFarmersPaginatedWithSearch(Pageable pageable, String search) {
+        if (search == null || search.trim().isEmpty()) {
+            return farmerRepository.findAll(pageable);
+        }
+
+        // Search across multiple fields using Criteria API
+        return farmerRepository.searchFarmers(search, pageable);
+    }
+
+
     public Farmer getFarmerByEmail(String email) {
         return farmerRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Farmer not found with email: " + email));
