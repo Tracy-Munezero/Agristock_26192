@@ -72,9 +72,18 @@ public class TransactionService {
         return transactionRepository.findAll();
     }
 
-    public Page<Transaction> getAllTransactionsPaginated(Pageable pageable, String search) {
-        return transactionRepository.findAll(search ,pageable);
+    public Page<Transaction> getAllTransactionsPaginated(Pageable pageable, String search, Long productId) {
+        if (productId != null) {
+            // Check if product exists
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
+
+            // Filter transactions by product
+        }
+        return transactionRepository.findAll(search ,pageable, productId);
     }
+
+
 
     // ==================== UPDATE ====================
     public Transaction updateTransaction(Long id, Transaction transactionDetails) {
@@ -126,12 +135,16 @@ public class TransactionService {
         return transactionRepository.findByBuyerBuyerId(buyerId);
     }
 
-    public Page<Transaction> getTransactionsByBuyerPaginated(Long buyerId, Pageable pageable) {
+    public Page<Transaction> getTransactionsByBuyerPaginated(Long buyerId, Pageable pageable, Long productId) {
         Buyer buyer = buyerRepository.findById(buyerId)
                 .orElseThrow(() -> new RuntimeException("Buyer not found"));
         println("Buyer found: " + buyer.getBuyerName());
 
-        return transactionRepository.findByBuyer(buyer, pageable);
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        println("Product found: " + product.getProductName());
+
+        return transactionRepository.findByBuyerAndOptionalProduct(buyer,product, pageable);
     }
 
     // Get transactions by product
@@ -144,9 +157,9 @@ public class TransactionService {
         return transactionRepository.findByFarmerId(farmerId);
     }
 
-    public Page<Transaction> getTransactionsByFarmerPaginated(Long farmerId, Pageable pageable) {
-        return transactionRepository.findByFarmerId(farmerId, pageable);
-    }
+//    public Page<Transaction> getTransactionsByFarmerPaginated(Long farmerId, Pageable pageable) {
+//        return transactionRepository.findByFarmerId(farmerId, pageable);
+//    }
 
     // Get transactions by date range
     public List<Transaction> getTransactionsByDateRange(LocalDateTime startDate, LocalDateTime endDate) {

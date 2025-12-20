@@ -131,7 +131,7 @@ public class ProductController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "productName") String sortBy,
-            @RequestParam(required = false) String search
+            @RequestParam(defaultValue = "") String search
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
         Page<Product> products = productService.getProductsByFarmerPaginated(farmerId, pageable, search);

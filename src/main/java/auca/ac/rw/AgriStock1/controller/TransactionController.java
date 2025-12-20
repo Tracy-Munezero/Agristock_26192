@@ -52,12 +52,13 @@ public class TransactionController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "transactionDate") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDirection,
-            @RequestParam(defaultValue = "") String search
+            @RequestParam(defaultValue = "") String search,
+            @RequestParam(required = false ) Long productid
     ) {
         Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC")
                 ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        Page<Transaction> transactions = transactionService.getAllTransactionsPaginated(pageable, search);
+        Page<Transaction> transactions = transactionService.getAllTransactionsPaginated(pageable, search, productid);
         return ResponseEntity.ok(transactions);
     }
 
@@ -105,10 +106,11 @@ public class TransactionController {
     public ResponseEntity<Page<Transaction>> getTransactionsByBuyerPaginated(
             @PathVariable Long buyerId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false ) Long productId
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "transactionDate"));
-        Page<Transaction> transactions = transactionService.getTransactionsByBuyerPaginated(buyerId, pageable);
+        Page<Transaction> transactions = transactionService.getTransactionsByBuyerPaginated(buyerId, pageable, productId);
         return ResponseEntity.ok(transactions);
     }
 
@@ -134,20 +136,20 @@ public class TransactionController {
         return ResponseEntity.ok(transactions);
     }
 
-    @GetMapping("/farmer/{farmerId}/paginated")
-    public ResponseEntity<Page<Transaction>> getTransactionsByFarmerPaginated(
-            @PathVariable Long farmerId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "transactionDate") String sortBy,
-            @RequestParam(defaultValue = "DESC") String sortDirection
-    ) {
-        Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC")
-                ? Sort.Direction.DESC : Sort.Direction.ASC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        Page<Transaction> transactions = transactionService.getTransactionsByFarmerPaginated(farmerId, pageable);
-        return ResponseEntity.ok(transactions);
-    }
+//    @GetMapping("/farmer/{farmerId}/paginated")
+//    public ResponseEntity<Page<Transaction>> getTransactionsByFarmerPaginated(
+//            @PathVariable Long farmerId,
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "10") int size,
+//            @RequestParam(defaultValue = "transactionDate") String sortBy,
+//            @RequestParam(defaultValue = "DESC") String sortDirection
+//    ) {
+//        Sort.Direction direction = sortDirection.equalsIgnoreCase("DESC")
+//                ? Sort.Direction.DESC : Sort.Direction.ASC;
+//        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+//        Page<Transaction> transactions = transactionService.getTransactionsByFarmerPaginated(farmerId, pageable);
+//        return ResponseEntity.ok(transactions);
+//    }
 
     @GetMapping("/farmer/{farmerId}/total-sales")
     public ResponseEntity<Double> getTotalSalesByFarmer(@PathVariable Long farmerId) {

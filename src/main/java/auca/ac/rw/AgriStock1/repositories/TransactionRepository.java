@@ -18,7 +18,20 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     // Find by buyer
     List<Transaction> findByBuyerBuyerId(Long buyerId);
+
     Page<Transaction> findByBuyer(Buyer buyer, Pageable pageable);
+
+    @Query("""
+        SELECT t FROM Transaction t
+        WHERE t.buyer = :buyer
+        AND (:product IS NULL OR t.product = :product)
+    """)
+    Page<Transaction> findByBuyerAndOptionalProduct(
+            @Param("buyer") Buyer buyer,
+            @Param("product") Product product,
+            Pageable pageable
+    );
+
 
     // Find by product
     List<Transaction> findByProductProductId(Long productId);
@@ -28,8 +41,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     @Query("SELECT t FROM Transaction t WHERE t.product.farmer.farmerId = :farmerId")
     List<Transaction> findByFarmerId(@Param("farmerId") Long farmerId);
 
-    @Query("SELECT t FROM Transaction t WHERE t.product.farmer.farmerId = :farmerId")
-    Page<Transaction> findByFarmerId(@Param("farmerId") Long farmerId, Pageable pageable);
+    @Query("""
+    SELECT t FROM Transaction t
+    WHERE (:productId IS NULL OR t.product.productId = :productId)
+""")
+    Page<Transaction> findAll(@Param("keyword") String keyword, Pageable pageable, @Param("productId") Long productId);
 
     // Date range queries
     List<Transaction> findByTransactionDateBetween(LocalDateTime startDate, LocalDateTime endDate);

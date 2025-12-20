@@ -16,10 +16,24 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     // Find by farmer
     List<Product> findByFarmerFarmerId(Long farmerId);
+
     @Query("SELECT p FROM Product p " +
             "WHERE LOWER(p.productName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "OR LOWER(p.category) LIKE LOWER(CONCAT('%', :keyword, '%')) ")
     Page<Product> findByFarmer(Farmer farmer, Pageable pageable, @Param("keyword") String keyword);
+
+    @Query("""
+    SELECT p FROM Product p
+    WHERE p.farmer = :farmer
+    AND 
+        LOWER(p.productName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+        LOWER(p.category) LIKE LOWER(CONCAT('%', :keyword, '%'))
+""")
+    Page<Product> findByFarmerWithOptionalSearch(
+            @Param("farmer") Farmer farmer,
+            @Param("keyword") String keyword,
+            Pageable pageable
+    );
 
     // Category queries
     List<Product> findByCategory(String category);

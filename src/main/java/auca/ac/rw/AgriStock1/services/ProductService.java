@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 
+import static java.sql.DriverManager.println;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -162,7 +164,8 @@ public class ProductService {
     public Page<Product> getProductsByFarmerPaginated(Long farmerId, Pageable pageable, String search) {
         Farmer farmer = farmerRepository.findById(farmerId)
                 .orElseThrow(() -> new RuntimeException("Farmer not found"));
-        return productRepository.findByFarmer(farmer, pageable, search);
+        println("Product found: " + productRepository.findByFarmerWithOptionalSearch(farmer, search,pageable));
+        return productRepository.findByFarmerWithOptionalSearch(farmer, search,pageable);
     }
 
     // Get products by category
